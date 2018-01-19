@@ -145,8 +145,12 @@ public final class RepairRunService {
       throw new ReaperException(errMsg);
     }
 
-    try (JmxProxy jmxProxy = context.jmxConnectionFactory
-        .connectAny(Optional.absent(), seedHosts, context.config.getJmxConnectionTimeoutInSeconds())) {
+    try (JmxProxy jmxProxy =
+        context.jmxConnectionFactory.connectAny(
+            Optional.absent(),
+            seedHosts,
+            context.config.getJmxConnectionTimeoutInSeconds(),
+            context.config.getJmxCredentialsForCluster(targetCluster.getName()))) {
 
       List<BigInteger> tokens = jmxProxy.getTokens();
       Map<List<String>, List<String>> rangeToEndpoint = jmxProxy.getRangeToEndpointMap(repairUnit.getKeyspaceName());
@@ -291,8 +295,12 @@ public final class RepairRunService {
 
     Map<List<String>, List<String>> rangeToEndpoint = Maps.newHashMap();
 
-    try (JmxProxy jmxProxy = context.jmxConnectionFactory
-        .connectAny(Optional.absent(), seedHosts, context.config.getJmxConnectionTimeoutInSeconds())) {
+    try (JmxProxy jmxProxy =
+        context.jmxConnectionFactory.connectAny(
+            Optional.absent(),
+            seedHosts,
+            context.config.getJmxConnectionTimeoutInSeconds(),
+            context.config.getJmxCredentialsForCluster(targetCluster.getName()))) {
 
       rangeToEndpoint = jmxProxy.getRangeToEndpointMap(repairUnit.getKeyspaceName());
     } catch (ReaperException e) {
@@ -315,8 +323,11 @@ public final class RepairRunService {
       Optional<String> tableNamesParam) throws ReaperException {
 
     Set<String> knownTables;
-    try (JmxProxy jmxProxy = context.jmxConnectionFactory
-        .connectAny(cluster, context.config.getJmxConnectionTimeoutInSeconds())) {
+    try (JmxProxy jmxProxy =
+        context.jmxConnectionFactory.connectAny(
+            cluster,
+            context.config.getJmxConnectionTimeoutInSeconds(),
+            context.config.getJmxCredentialsForCluster(cluster.getName()))) {
 
       knownTables = jmxProxy.getTableNamesForKeyspace(keyspace);
       if (knownTables.isEmpty()) {
@@ -341,8 +352,11 @@ public final class RepairRunService {
       Optional<String> nodesToRepairParam) throws ReaperException {
 
     Set<String> nodesInCluster;
-    try (JmxProxy jmxProxy
-        = context.jmxConnectionFactory.connectAny(cluster, context.config.getJmxConnectionTimeoutInSeconds())) {
+    try (JmxProxy jmxProxy =
+        context.jmxConnectionFactory.connectAny(
+            cluster,
+            context.config.getJmxConnectionTimeoutInSeconds(),
+            context.config.getJmxCredentialsForCluster(cluster.getName()))) {
 
       nodesInCluster = jmxProxy.getEndpointToHostId().keySet();
       if (nodesInCluster.isEmpty()) {

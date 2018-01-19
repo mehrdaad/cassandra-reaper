@@ -54,7 +54,7 @@ public final class JmxConnectionsInitializer implements AutoCloseable {
     seedHosts.addAll(cluster.getSeedHosts());
 
     for (int i = 0; i < seedHosts.size(); i++) {
-      jmxTasks.add(connectToJmx(Arrays.asList(seedHosts.get(i))));
+      jmxTasks.add(connectToJmx(cluster, Arrays.asList(seedHosts.get(i))));
       if (i % 10 == 0 || i == seedHosts.size() - 1) {
         tryConnectingToJmxSeeds(jmxTasks);
         jmxTasks = Lists.newArrayList();
@@ -62,10 +62,14 @@ public final class JmxConnectionsInitializer implements AutoCloseable {
     }
   }
 
-  private Callable<Optional<String>> connectToJmx(List<String> endpoints) {
+  private Callable<Optional<String>> connectToJmx(Cluster cluster, List<String> endpoints) {
     return () -> {
-      try (JmxProxy jmxProxy = context.jmxConnectionFactory
-              .connectAny(Optional.absent(), endpoints, (int) JmxProxy.DEFAULT_JMX_CONNECTION_TIMEOUT.getSeconds())) {
+      try (JmxProxy jmxProxy =
+          context.jmxConnectionFactory.connectAny(
+              Optional.absent(),
+              endpoints,
+              (int) JmxProxy.DEFAULT_JMX_CONNECTION_TIMEOUT.getSeconds(),
+              context.config.getJmxCredentialsForCluster(cluster.getName()))) {
 
         return Optional.of(endpoints.get(0));
 

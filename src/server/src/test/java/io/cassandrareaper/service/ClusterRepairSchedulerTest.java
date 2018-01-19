@@ -22,7 +22,6 @@ import io.cassandrareaper.core.RepairSchedule;
 import io.cassandrareaper.core.RepairUnit;
 import io.cassandrareaper.jmx.JmxConnectionFactory;
 import io.cassandrareaper.jmx.JmxProxy;
-import io.cassandrareaper.service.ClusterRepairScheduler;
 import io.cassandrareaper.storage.MemoryStorage;
 
 import java.time.Duration;
@@ -66,14 +65,17 @@ public final class ClusterRepairSchedulerTest {
     clusterRepairAuto = new ClusterRepairScheduler(context);
     jmxProxy = mock(JmxProxy.class);
 
-    when(context.jmxConnectionFactory.connectAny(CLUSTER, context.config.getJmxConnectionTimeoutInSeconds()))
+    when(context.jmxConnectionFactory.connectAny(
+            CLUSTER,
+            context.config.getJmxConnectionTimeoutInSeconds(),
+            context.config.getJmxCredentialsForCluster(CLUSTER.getName())))
         .thenReturn(jmxProxy);
 
-    when(
-        context.jmxConnectionFactory.connectAny(
+    when(context.jmxConnectionFactory.connectAny(
             Optional.absent(),
             CLUSTER.getSeedHosts(),
-            context.config.getJmxConnectionTimeoutInSeconds()))
+            context.config.getJmxConnectionTimeoutInSeconds(),
+            context.config.getJmxCredentialsForCluster(CLUSTER.getName())))
         .thenReturn(jmxProxy);
   }
 

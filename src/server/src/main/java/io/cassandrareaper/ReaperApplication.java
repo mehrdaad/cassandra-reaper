@@ -14,7 +14,6 @@
 
 package io.cassandrareaper;
 
-import io.cassandrareaper.ReaperApplicationConfiguration.JmxCredentials;
 import io.cassandrareaper.jmx.JmxConnectionFactory;
 import io.cassandrareaper.jmx.JmxConnectionsInitializer;
 import io.cassandrareaper.resources.ClusterResource;
@@ -155,12 +154,6 @@ public final class ReaperApplication extends Application<ReaperApplicationConfig
 
       if (config.useAddressTranslator()) {
         context.jmxConnectionFactory.setAddressTranslator(new EC2MultiRegionAddressTranslator());
-      }
-
-      JmxCredentials jmxAuth = config.getJmxAuth();
-      if (jmxAuth != null) {
-        LOG.debug("using specified JMX credentials for authentication");
-        context.jmxConnectionFactory.setJmxAuth(jmxAuth);
       }
     }
 

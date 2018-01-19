@@ -40,7 +40,6 @@ public class JmxConnectionFactory {
   private final MetricRegistry metricRegistry;
   private final HostConnectionCounters hostConnectionCounters;
   private Map<String, Integer> jmxPorts;
-  private JmxCredentials jmxAuth;
   private EC2MultiRegionAddressTranslator addressTranslator;
 
   @VisibleForTesting
@@ -54,7 +53,11 @@ public class JmxConnectionFactory {
     hostConnectionCounters = new HostConnectionCounters(metricRegistry);
   }
 
-  protected JmxProxy connect(Optional<RepairStatusHandler> handler, String host, int connectionTimeout)
+  protected JmxProxy connect(
+      Optional<RepairStatusHandler> handler,
+      String host,
+      int connectionTimeout,
+      Optional<JmxCredentials> jmxCredentials)
       throws ReaperException, InterruptedException {
     // use configured jmx port for host if provided
     if (jmxPorts != null && jmxPorts.containsKey(host) && !host.contains(":")) {
@@ -63,9 +66,9 @@ public class JmxConnectionFactory {
 
     String username = null;
     String password = null;
-    if (jmxAuth != null) {
-      username = jmxAuth.getUsername();
-      password = jmxAuth.getPassword();
+    if (jmxCredentials.isPresent()) {
+      username = jmxCredentials.get().getUsername();
+      password = jmxCredentials.get().getPassword();
     }
     try {
       JmxProxy jmxProxy = JmxProxyImpl.connect(handler, host, username, password, addressTranslator, connectionTimeout);
@@ -77,14 +80,18 @@ public class JmxConnectionFactory {
     }
   }
 
-  public final JmxProxy connect(String host, int connectionTimeout) throws ReaperException, InterruptedException {
-    return connect(Optional.<RepairStatusHandler>absent(), host, connectionTimeout);
+  public final JmxProxy connect(
+      String host, int connectionTimeout, Optional<JmxCredentials> jmxCredentials)
+      throws ReaperException, InterruptedException {
+    return connect(Optional.<RepairStatusHandler>absent(), host, connectionTimeout, jmxCredentials);
   }
 
   public final JmxProxy connectAny(
       Optional<RepairStatusHandler> handler,
       Collection<String> hosts,
-      int connectionTimeout) throws ReaperException {
+      int connectionTimeout,
+      Optional<JmxCredentials> jmxCredentials)
+      throws ReaperException {
 
     Preconditions.checkArgument(null != hosts && !hosts.isEmpty(), "no hosts provided to connectAny");
 
@@ -97,7 +104,7 @@ public class JmxConnectionFactory {
         // First loop, we try the most accessible nodes, then second loop we try all nodes
         if (null != host && (hostConnectionCounters.getSuccessfulConnections(host) >= 0 || 1 == i)) {
           try {
-            return connect(handler, host, connectionTimeout);
+            return connect(handler, host, connectionTimeout, jmxCredentials);
           } catch (ReaperException | RuntimeException e) {
             LOG.info("Unreachable host: {}: {}", e.getMessage(), e.getCause().getMessage());
             LOG.debug("Unreachable host: ", e);
@@ -110,20 +117,19 @@ public class JmxConnectionFactory {
     throw new ReaperException("no host could be reached through JMX");
   }
 
-  public final JmxProxy connectAny(Cluster cluster, int connectionTimeout) throws ReaperException {
+  public final JmxProxy connectAny(
+      Cluster cluster, int connectionTimeout, Optional<JmxCredentials> jmxCredentials)
+      throws ReaperException {
     Set<String> hosts = cluster.getSeedHosts();
     if (hosts == null || hosts.isEmpty()) {
       throw new ReaperException("no seeds in cluster with name: " + cluster.getName());
     }
-    return connectAny(Optional.<RepairStatusHandler>absent(), hosts, connectionTimeout);
+    return connectAny(
+        Optional.<RepairStatusHandler>absent(), hosts, connectionTimeout, jmxCredentials);
   }
 
   public final void setJmxPorts(Map<String, Integer> jmxPorts) {
     this.jmxPorts = jmxPorts;
-  }
-
-  public final void setJmxAuth(JmxCredentials jmxAuth) {
-    this.jmxAuth = jmxAuth;
   }
 
   public final void setAddressTranslator(EC2MultiRegionAddressTranslator addressTranslator) {

@@ -27,6 +27,7 @@ import io.cassandrareaper.storage.MemoryStorage;
 import java.util.Collections;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+
 import javax.management.JMException;
 
 import org.assertj.core.api.Assertions;
@@ -175,7 +176,7 @@ public final class HeartTest {
 
     Mockito.verify((CassandraStorage)context.storage, Mockito.times(1)).saveHeartbeat();
     Mockito.verify((CassandraStorage)context.storage, Mockito.times(2)).getNodeMetrics(any());
-    Mockito.verify(context.jmxConnectionFactory, Mockito.times(0)).connect(any(), anyInt());
+    Mockito.verify(context.jmxConnectionFactory, Mockito.times(0)).connect(any(), anyInt(), any());
     Mockito.verify((CassandraStorage)context.storage, Mockito.times(0)).storeNodeMetrics(any(), any());
   }
 
@@ -207,16 +208,18 @@ public final class HeartTest {
 
     JmxProxy nodeProxy = Mockito.mock(JmxProxy.class);
 
-    Mockito
-        .when(context.jmxConnectionFactory.connect(any(), eq(context.config.getJmxConnectionTimeoutInSeconds())))
+    Mockito.when(
+            context.jmxConnectionFactory.connect(
+                any(), eq(context.config.getJmxConnectionTimeoutInSeconds()), any()))
         .thenReturn(nodeProxy);
 
     HostConnectionCounters hostConnectionCounters = Mockito.mock(HostConnectionCounters.class);
     Mockito.when(context.jmxConnectionFactory.getHostConnectionCounters()).thenReturn(hostConnectionCounters);
 
-    Mockito
-      .when(context.jmxConnectionFactory.connect(any(), eq(context.config.getJmxConnectionTimeoutInSeconds())))
-      .thenThrow(InterruptedException.class);
+    Mockito.when(
+            context.jmxConnectionFactory.connect(
+                any(), eq(context.config.getJmxConnectionTimeoutInSeconds()), any()))
+        .thenThrow(InterruptedException.class);
 
     try (Heart heart = Heart.create(context)) {
       heart.beat();
@@ -225,7 +228,7 @@ public final class HeartTest {
 
     Mockito.verify((CassandraStorage)context.storage, Mockito.times(1)).saveHeartbeat();
     Mockito.verify((CassandraStorage)context.storage, Mockito.times(2)).getNodeMetrics(any());
-    Mockito.verify(context.jmxConnectionFactory, Mockito.times(0)).connect(any(), anyInt());
+    Mockito.verify(context.jmxConnectionFactory, Mockito.times(0)).connect(any(), anyInt(), any());
     Mockito.verify((CassandraStorage)context.storage, Mockito.times(0)).storeNodeMetrics(any(), any());
   }
 
@@ -258,7 +261,8 @@ public final class HeartTest {
 
     JmxProxy nodeProxy = Mockito.mock(JmxProxy.class);
 
-    Mockito.when(context.jmxConnectionFactory.connect(any(), anyInt())).thenReturn(nodeProxy);
+    Mockito.when(context.jmxConnectionFactory.connect(any(), anyInt(), any()))
+        .thenReturn(nodeProxy);
 
     try (Heart heart = Heart.create(context)) {
       heart.beat();
@@ -267,7 +271,7 @@ public final class HeartTest {
 
     Mockito.verify((CassandraStorage)context.storage, Mockito.times(1)).saveHeartbeat();
     Mockito.verify((CassandraStorage)context.storage, Mockito.times(2)).getNodeMetrics(any());
-    Mockito.verify(context.jmxConnectionFactory, Mockito.times(2)).connect(any(), anyInt());
+    Mockito.verify(context.jmxConnectionFactory, Mockito.times(2)).connect(any(), anyInt(), any());
     Mockito.verify((CassandraStorage)context.storage, Mockito.times(2)).storeNodeMetrics(any(), any());
   }
 
@@ -299,7 +303,8 @@ public final class HeartTest {
             .build()));
 
     JmxProxy nodeProxy = Mockito.mock(JmxProxy.class);
-    Mockito.when(context.jmxConnectionFactory.connect(any(), anyInt())).thenReturn(nodeProxy);
+    Mockito.when(context.jmxConnectionFactory.connect(any(), anyInt(), any()))
+        .thenReturn(nodeProxy);
 
     Mockito.when(nodeProxy.getPendingCompactions())
         .then(a -> {
@@ -318,7 +323,7 @@ public final class HeartTest {
 
     Mockito.verify((CassandraStorage)context.storage, Mockito.times(2)).saveHeartbeat();
     Mockito.verify((CassandraStorage)context.storage, Mockito.times(2)).getNodeMetrics(any());
-    Mockito.verify(context.jmxConnectionFactory, Mockito.times(2)).connect(any(), anyInt());
+    Mockito.verify(context.jmxConnectionFactory, Mockito.times(2)).connect(any(), anyInt(), any());
     Mockito.verify((CassandraStorage)context.storage, Mockito.times(2)).storeNodeMetrics(any(), any());
   }
 }

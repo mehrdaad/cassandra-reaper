@@ -150,8 +150,11 @@ public final class RepairManager {
         // refresh segment once we're inside leader-election
         segment = context.storage.getRepairSegment(repairRun.getId(), segment.getId()).get();
         if (RepairSegment.State.RUNNING == segment.getState()) {
-          try (JmxProxy jmxProxy = context.jmxConnectionFactory.connect(
-              segment.getCoordinatorHost(), context.config.getJmxConnectionTimeoutInSeconds())) {
+          try (JmxProxy jmxProxy =
+              context.jmxConnectionFactory.connect(
+                  segment.getCoordinatorHost(),
+                  context.config.getJmxConnectionTimeoutInSeconds(),
+                  context.config.getJmxCredentialsForCluster(repairRun.getClusterName()))) {
 
             SegmentRunner.abort(context, segment, jmxProxy);
           } catch (ReaperException | NumberFormatException | InterruptedException e) {
