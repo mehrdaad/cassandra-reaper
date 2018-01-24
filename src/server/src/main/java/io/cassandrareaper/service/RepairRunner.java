@@ -74,9 +74,7 @@ final class RepairRunner implements Runnable {
 
     JmxProxy jmx =
         this.context.jmxConnectionFactory.connectAny(
-            cluster.get(),
-            context.config.getJmxConnectionTimeoutInSeconds(),
-            context.config.getJmxCredentialsForCluster(cluster.get().getName()));
+            cluster.get(), context.config.getJmxConnectionTimeoutInSeconds());
 
     String keyspace = repairUnitOpt.get().getKeyspaceName();
     int parallelRepairs
@@ -227,9 +225,7 @@ final class RepairRunner implements Runnable {
       Cluster cluster = context.storage.getCluster(this.clusterName).get();
       jmxConnection =
           context.jmxConnectionFactory.connectAny(
-              cluster,
-              context.config.getJmxConnectionTimeoutInSeconds(),
-              context.config.getJmxCredentialsForCluster(cluster.getName()));
+              cluster, context.config.getJmxConnectionTimeoutInSeconds());
       LOG.debug("successfully reestablished JMX proxy for repair runner");
     }
   }

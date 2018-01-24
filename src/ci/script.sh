@@ -13,7 +13,7 @@ case "${TEST_TYPE}" in
         ccm start -v
         sleep 30
         ccm status
-        ccm node1 nodetool status
+        #ccm node1 nodetool "status --username=cassandra --password=cassandrapassword"
 
         MAVEN_OPTS="-Xmx1g" mvn clean install
         if [ "x${GRIM_MIN}" = "x" ]

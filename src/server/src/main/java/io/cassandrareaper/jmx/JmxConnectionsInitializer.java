@@ -16,6 +16,7 @@ package io.cassandrareaper.jmx;
 
 import io.cassandrareaper.AppContext;
 import io.cassandrareaper.core.Cluster;
+import io.cassandrareaper.core.Node;
 
 import java.util.Arrays;
 import java.util.List;
@@ -26,6 +27,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
@@ -67,9 +69,11 @@ public final class JmxConnectionsInitializer implements AutoCloseable {
       try (JmxProxy jmxProxy =
           context.jmxConnectionFactory.connectAny(
               Optional.absent(),
-              endpoints,
-              (int) JmxProxy.DEFAULT_JMX_CONNECTION_TIMEOUT.getSeconds(),
-              context.config.getJmxCredentialsForCluster(cluster.getName()))) {
+              endpoints
+                  .stream()
+                  .map(host -> Node.builder().withCluster(cluster).withHostname(host).build())
+                  .collect(Collectors.toList()),
+              (int) JmxProxy.DEFAULT_JMX_CONNECTION_TIMEOUT.getSeconds())) {
 
         return Optional.of(endpoints.get(0));
 

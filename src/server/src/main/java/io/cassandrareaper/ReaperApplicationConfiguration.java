@@ -14,8 +14,6 @@
 
 package io.cassandrareaper;
 
-import io.cassandrareaper.core.Cluster;
-
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
@@ -27,7 +25,6 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.DefaultValue;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Optional;
 import io.dropwizard.Configuration;
 import io.dropwizard.db.DataSourceFactory;
 import org.apache.cassandra.repair.RepairParallelism;
@@ -242,27 +239,12 @@ public final class ReaperApplicationConfiguration extends Configuration {
     this.jmxAuth = jmxAuth;
   }
 
-  private Map<String, JmxCredentials> getJmxCredentials() {
+  public Map<String, JmxCredentials> getJmxCredentials() {
     return jmxCredentials;
   }
 
-  private void setJmxCredentials(Map<String, JmxCredentials> jmxCredentials) {
+  public void setJmxCredentials(Map<String, JmxCredentials> jmxCredentials) {
     this.jmxCredentials = jmxCredentials;
-  }
-
-  public Optional<JmxCredentials> getJmxCredentialsForCluster(String clusterName) {
-    Optional<JmxCredentials> jmxCredentials = Optional.fromNullable(getJmxAuth());
-    if (getJmxCredentials() != null && getJmxCredentials().containsKey(clusterName)) {
-      jmxCredentials = Optional.of(getJmxCredentials().get(clusterName));
-    }
-
-    // As clusters get stored in the database with their "symbolic name" we have to look for that too
-    if (getJmxCredentials() != null
-        && getJmxCredentials().containsKey(Cluster.toSymbolicName(clusterName))) {
-      jmxCredentials = Optional.of(getJmxCredentials().get(Cluster.toSymbolicName(clusterName)));
-    }
-
-    return jmxCredentials;
   }
 
   public boolean hasAutoSchedulingEnabled() {

@@ -28,7 +28,6 @@ import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -36,6 +35,7 @@ import org.apache.cassandra.repair.RepairParallelism;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import static java.lang.String.format;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -66,16 +66,11 @@ public final class ClusterRepairSchedulerTest {
     jmxProxy = mock(JmxProxy.class);
 
     when(context.jmxConnectionFactory.connectAny(
-            CLUSTER,
-            context.config.getJmxConnectionTimeoutInSeconds(),
-            context.config.getJmxCredentialsForCluster(CLUSTER.getName())))
+            CLUSTER, context.config.getJmxConnectionTimeoutInSeconds()))
         .thenReturn(jmxProxy);
 
     when(context.jmxConnectionFactory.connectAny(
-            Optional.absent(),
-            CLUSTER.getSeedHosts(),
-            context.config.getJmxConnectionTimeoutInSeconds(),
-            context.config.getJmxCredentialsForCluster(CLUSTER.getName())))
+            Mockito.any(), Mockito.anyCollection(), Mockito.anyInt()))
         .thenReturn(jmxProxy);
   }
 

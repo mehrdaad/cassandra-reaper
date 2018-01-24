@@ -17,10 +17,12 @@ package io.cassandrareaper.service;
 import io.cassandrareaper.AppContext;
 import io.cassandrareaper.ReaperException;
 import io.cassandrareaper.core.Cluster;
+import io.cassandrareaper.core.Node;
 import io.cassandrareaper.core.RepairUnit;
 import io.cassandrareaper.jmx.JmxProxy;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.google.common.base.Optional;
 import org.slf4j.Logger;
@@ -63,9 +65,12 @@ public final class RepairUnitService {
     try (JmxProxy jmxProxy =
         context.jmxConnectionFactory.connectAny(
             Optional.absent(),
-            cluster.getSeedHosts(),
-            context.config.getJmxConnectionTimeoutInSeconds(),
-            context.config.getJmxCredentialsForCluster(cluster.getName()))) {
+            cluster
+                .getSeedHosts()
+                .stream()
+                .map(host -> Node.builder().withCluster(cluster).withHostname(host).build())
+                .collect(Collectors.toList()),
+            context.config.getJmxConnectionTimeoutInSeconds())) {
 
       cassandraVersion = Optional.fromNullable(jmxProxy.getCassandraVersion());
     } catch (ReaperException e) {

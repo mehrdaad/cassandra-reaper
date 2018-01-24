@@ -17,6 +17,7 @@ package io.cassandrareaper.service;
 import io.cassandrareaper.AppContext;
 import io.cassandrareaper.ReaperApplicationConfiguration;
 import io.cassandrareaper.ReaperException;
+import io.cassandrareaper.core.Node;
 import io.cassandrareaper.core.NodeMetrics;
 import io.cassandrareaper.jmx.JmxProxy;
 import io.cassandrareaper.storage.IDistributedStorage;
@@ -117,9 +118,8 @@ final class Heart implements AutoCloseable {
 
                           try (JmxProxy nodeProxy
                               = context.jmxConnectionFactory.connect(
-                                  req.getNode(),
-                                  jmxTimeoutSeconds,
-                                  context.config.getJmxCredentialsForCluster(req.getCluster()))) {
+                                  Node.builder().withClusterName(req.getCluster()).withHostname(req.getNode()).build(),
+                                  jmxTimeoutSeconds)) {
 
                             storage.storeNodeMetrics(
                                 runId,

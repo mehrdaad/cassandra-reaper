@@ -16,9 +16,9 @@ package io.cassandrareaper.service;
 
 import io.cassandrareaper.AppContext;
 import io.cassandrareaper.ReaperApplicationConfiguration;
-import io.cassandrareaper.ReaperApplicationConfiguration.JmxCredentials;
 import io.cassandrareaper.ReaperException;
 import io.cassandrareaper.core.Cluster;
+import io.cassandrareaper.core.Node;
 import io.cassandrareaper.core.RepairRun;
 import io.cassandrareaper.core.RepairSegment;
 import io.cassandrareaper.core.RepairUnit;
@@ -117,10 +117,7 @@ public final class RepairRunnerTest {
 
           @Override
           protected JmxProxy connect(
-              final Optional<RepairStatusHandler> handler,
-              String host,
-              int connectionTimeout,
-              Optional<JmxCredentials> jmxCredentials)
+              final Optional<RepairStatusHandler> handler, Node host, int connectionTimeout)
               throws ReaperException {
 
             final JmxProxy jmx = mock(JmxProxy.class);
@@ -133,8 +130,8 @@ public final class RepairRunnerTest {
             when(jmx.getDataCenter()).thenReturn("dc1");
             when(jmx.getDataCenter(anyString())).thenReturn("dc1");
 
-            when(jmx.triggerRepair(any(BigInteger.class), any(BigInteger.class), any(),
-                any(RepairParallelism.class), any(), anyBoolean(), any()))
+            when(jmx.triggerRepair(any(BigInteger.class), any(BigInteger.class),
+                any(), any(RepairParallelism.class), any(), anyBoolean(), any()))
                 .then(
                     (invocation) -> {
                       assertEquals(
@@ -150,7 +147,7 @@ public final class RepairRunnerTest {
                               handler
                                   .get()
                                   .handle(repairNumber, Optional.of(ActiveRepairService.Status.STARTED),
-                                      Optional.absent(), null);
+                                      Optional.absent(),null);
 
                               assertEquals(
                                   RepairSegment.State.RUNNING,
@@ -165,7 +162,8 @@ public final class RepairRunnerTest {
 
                               handler
                                   .get()
-                                  .handle(repairNumber, Optional.of(ActiveRepairService.Status.STARTED),
+                                  .handle(
+                                      repairNumber, Optional.of(ActiveRepairService.Status.STARTED),
                                       Optional.absent(), null);
 
                               assertEquals(
@@ -174,7 +172,8 @@ public final class RepairRunnerTest {
 
                               handler
                                   .get()
-                                  .handle(repairNumber, Optional.of(ActiveRepairService.Status.SESSION_SUCCESS),
+                                  .handle(
+                                      repairNumber, Optional.of(ActiveRepairService.Status.SESSION_SUCCESS),
                                       Optional.absent(), null);
 
                               assertEquals(
@@ -183,7 +182,8 @@ public final class RepairRunnerTest {
 
                               handler
                                   .get()
-                                  .handle(repairNumber, Optional.of(ActiveRepairService.Status.FINISHED),
+                                  .handle(
+                                      repairNumber, Optional.of(ActiveRepairService.Status.FINISHED),
                                       Optional.absent(), null);
 
                               mutex.release();
@@ -265,10 +265,7 @@ public final class RepairRunnerTest {
 
           @Override
           protected JmxProxy connect(
-              final Optional<RepairStatusHandler> handler,
-              String host,
-              int connectionTimeout,
-              Optional<JmxCredentials> jmxCredentials)
+              final Optional<RepairStatusHandler> handler, Node host, int connectionTimeout)
               throws ReaperException {
 
             final JmxProxy jmx = mock(JmxProxy.class);
@@ -282,8 +279,8 @@ public final class RepairRunnerTest {
             when(jmx.getDataCenter(anyString())).thenReturn("dc1");
             //doNothing().when(jmx).cancelAllRepairs();
 
-            when(jmx.triggerRepair(any(BigInteger.class), any(BigInteger.class), any(),
-                any(RepairParallelism.class), any(), anyBoolean(), any()))
+            when(jmx.triggerRepair(any(BigInteger.class), any(BigInteger.class),
+                any(), any(RepairParallelism.class), any(), anyBoolean(), any()))
                 .then(
                     (invocation) -> {
                       assertEquals(
@@ -298,8 +295,7 @@ public final class RepairRunnerTest {
                             public void run() {
                               handler
                                   .get()
-                                  .handle(repairNumber, Optional.absent(),
-                                      Optional.of(ProgressEventType.START), null);
+                                  .handle(repairNumber, Optional.absent(), Optional.of(ProgressEventType.START), null);
                               assertEquals(
                                   RepairSegment.State.RUNNING,
                                   storage.getRepairSegment(RUN_ID, SEGMENT_ID).get().getState());
@@ -312,22 +308,31 @@ public final class RepairRunnerTest {
                             public void run() {
                               handler
                                   .get()
-                                  .handle(repairNumber, Optional.absent(),
-                                      Optional.of(ProgressEventType.START), null);
+                                  .handle(
+                                      repairNumber,
+                                      Optional.absent(),
+                                      Optional.of(ProgressEventType.START),
+                                      null);
                               assertEquals(
                                   RepairSegment.State.RUNNING,
                                   storage.getRepairSegment(RUN_ID, SEGMENT_ID).get().getState());
                               handler
                                   .get()
-                                  .handle(repairNumber, Optional.absent(),
-                                      Optional.of(ProgressEventType.SUCCESS), null);
+                                  .handle(
+                                      repairNumber,
+                                      Optional.absent(),
+                                      Optional.of(ProgressEventType.SUCCESS),
+                                      null);
                               assertEquals(
                                   RepairSegment.State.DONE,
                                   storage.getRepairSegment(RUN_ID, SEGMENT_ID).get().getState());
                               handler
                                   .get()
-                                  .handle(repairNumber, Optional.absent(),
-                                      Optional.of(ProgressEventType.COMPLETE), null);
+                                  .handle(
+                                      repairNumber,
+                                      Optional.absent(),
+                                      Optional.of(ProgressEventType.COMPLETE),
+                                      null);
                               mutex.release();
                               LOG.info("MUTEX RELEASED");
                             }
@@ -411,10 +416,7 @@ public final class RepairRunnerTest {
         new JmxConnectionFactory() {
           @Override
           protected JmxProxy connect(
-              final Optional<RepairStatusHandler> handler,
-              String host,
-              int connectionTimeout,
-              Optional<JmxCredentials> jmxCredentials)
+              final Optional<RepairStatusHandler> handler, Node host, int connectionTimeout)
               throws ReaperException {
 
             final JmxProxy jmx = mock(JmxProxy.class);

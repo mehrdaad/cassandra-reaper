@@ -15,9 +15,9 @@
 package io.cassandrareaper.resources;
 
 import io.cassandrareaper.AppContext;
-import io.cassandrareaper.ReaperApplicationConfiguration.JmxCredentials;
 import io.cassandrareaper.ReaperException;
 import io.cassandrareaper.core.Cluster;
+import io.cassandrareaper.core.Node;
 import io.cassandrareaper.jmx.JmxConnectionFactory;
 import io.cassandrareaper.jmx.JmxProxy;
 import io.cassandrareaper.jmx.RepairStatusHandler;
@@ -212,10 +212,7 @@ public final class ClusterResourceTest {
         new JmxConnectionFactory() {
           @Override
           protected JmxProxy connect(
-              Optional<RepairStatusHandler> handler,
-              String host,
-              int connectionTimeout,
-              Optional<JmxCredentials> jmxCredentials)
+              Optional<RepairStatusHandler> handler, Node host, int connectionTimeout)
               throws ReaperException {
             return jmxProxy;
           }

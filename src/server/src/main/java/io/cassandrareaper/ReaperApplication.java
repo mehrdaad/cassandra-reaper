@@ -14,6 +14,7 @@
 
 package io.cassandrareaper;
 
+import io.cassandrareaper.ReaperApplicationConfiguration.JmxCredentials;
 import io.cassandrareaper.jmx.JmxConnectionFactory;
 import io.cassandrareaper.jmx.JmxConnectionsInitializer;
 import io.cassandrareaper.resources.ClusterResource;
@@ -155,6 +156,18 @@ public final class ReaperApplication extends Application<ReaperApplicationConfig
       if (config.useAddressTranslator()) {
         context.jmxConnectionFactory.setAddressTranslator(new EC2MultiRegionAddressTranslator());
       }
+    }
+
+    JmxCredentials jmxAuth = config.getJmxAuth();
+    if (jmxAuth != null) {
+      LOG.debug("using specified JMX credentials for authentication");
+      context.jmxConnectionFactory.setJmxAuth(jmxAuth);
+    }
+
+    Map<String, JmxCredentials> jmxCredentials = config.getJmxCredentials();
+    if (jmxCredentials != null) {
+      LOG.debug("using specified JMX credentials per cluster for authentication");
+      context.jmxConnectionFactory.setJmxCredentials(jmxCredentials);
     }
 
     // Enable cross-origin requests for using external GUI applications.

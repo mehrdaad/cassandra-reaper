@@ -42,9 +42,9 @@ jmxCredentials:
   "test cluster":
     username: cassandra
     password: cassandra
-  cluster2:
+  test:
     username: cassandra
-    password: cassandra2
+    password: cassandrapassword
 
 # database section will be ignored if storageType is set to "cassandra"
 h2:
